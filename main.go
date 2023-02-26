@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 
 	"golang.org/x/net/websocket"
 )
 
 type Server struct {
 	conns map[*websocket.Conn]bool
+	sync.RWMutex
 }
 
 func NewServer() *Server {
@@ -21,9 +23,25 @@ func NewServer() *Server {
 func (s *Server) handleWS(ws *websocket.Conn) {
 	fmt.Println("new incoming connection from client: ", ws.RemoteAddr())
 
-	s.conns[ws] = true
+	s.addClient(ws)
 	s.readLoop(ws)
 }
+
+func (s *Server) addClient(ws *websocket.Conn) {
+	s.Lock()
+	defer s.Unlock()
+	s.conns[ws] = true
+}
+
+// func (s *Server) removeClient(ws *websocket.Conn) {
+// 	s.Lock()
+// 	defer s.Unlock()
+
+// 	if _, ok := s.conns[ws]; ok {
+// 		s.conns.Close()
+// 		delete(s.conns, ws)
+// 	}
+// }
 
 func (s *Server) readLoop(ws *websocket.Conn) {
 	buf := make([]byte, 1024)
