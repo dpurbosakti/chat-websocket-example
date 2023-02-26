@@ -38,7 +38,7 @@ func (s *Server) addClient(ws *websocket.Conn) {
 // 	defer s.Unlock()
 
 // 	if _, ok := s.conns[ws]; ok {
-// 		s.conns.Close()
+// 		ws.Close()
 // 		delete(s.conns, ws)
 // 	}
 // }
